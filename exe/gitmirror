@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require "gitmirror"
+
+require "optparse"
+require "optparse/uri"
+require "logger"
+require "uri"
+
+repository = nil
+ref        ='master'
+workdir    = nil
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: gitmirror [options]"
+
+  opts.on("-d", "--debug", "Print debug information") do |v|
+    Gitmirror.logger = Logger.new(STDOUT)
+  end
+  
+  opts.on("-u", "--url REPOSITORY", URI, "Remote repository") do |u|
+    repository = u.to_s
+  end
+
+  opts.on("-r", "--ref REF", String, "reference (branch, tag or commit) to checkout (default: master)") do |u|
+    ref = u 
+  end
+
+  opts.on("-w", "--workdir PATH", String, "Workdir for checking out latest branch") do |u|
+    workdir = u
+  end
+end
+
+rest = parser.parse!
+
+unless repository
+  puts "Error: repository url required"
+  puts parser
+  exit 1
+end
+unless workdir
+  puts "Error: workdir required"
+  puts parser
+  exit 1
+end
+
+hash = Gitmirror::Repository.new(repository).mirror_and_checkout(workdir, ref)
+puts "Checked out #{ref} (#{hash}) to #{workdir}"
