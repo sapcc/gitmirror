@@ -7,25 +7,19 @@ module Gitmirror
         #init bare repository
         unless File.exists? local_repo_path 
           FileUtils.mkdir_p local_repo_path
-          in_path local_repo_path do
-            git "init --bare" #idempotent, does not harm existing repos
-            git "remote add origin --mirror=fetch #{url}" #raises an error
-          end
+          git "init --bare #{local_repo_path}" #idempotent, does not harm existing repos
+          git "--git-dir=#{local_repo_path} remote add origin --mirror=fetch #{url}" #raises an error
         end
         #fetch updates
-        in_path local_repo_path do
-          git "fetch origin"
-        end
+        git "--git-dir=#{local_repo_path} fetch origin"
         local_repo_path
       end
 
       def checkout repo_path, workdir, rev
         #checkout workdir
-        FileUtils.mkdir_p workdir 
-        in_path repo_path do
-          git "--work-tree #{workdir} checkout -f #{rev}"
-          git("rev-parse #{rev}").rstrip
-        end
+        FileUtils.mkdir_p workdir
+        git "--git-dir=#{repo_path} --work-tree #{workdir} checkout -f #{rev}"
+        git("--git-dir=#{repo_path} rev-parse #{rev}").rstrip
       end
 
       private
@@ -37,10 +31,6 @@ module Gitmirror
         out = `#{command} 2>&1`
         raise GitError, "Executing [#{command}] failed: #{out}" if $?.exitstatus != 0
         out
-      end
-
-      def in_path path, &block
-        Dir.chdir(path, &block)
       end
 
     end
