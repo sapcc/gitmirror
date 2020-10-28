@@ -7,8 +7,8 @@ module Gitmirror
       @path = path ? File.expand_path(path) : default_path 
     end
 
-    def mirror
-      backend.mirror(url, path)
+    def mirror credential=nil
+      backend.mirror(url, path, credential)
       path
     end
 

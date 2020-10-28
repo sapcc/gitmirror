@@ -1,3 +1,5 @@
+require "tmpdir"
+
 RSpec.shared_examples "backend" do
   it 'mirrors a remote repository' do
     path = remote_git_repo("test")
@@ -28,4 +30,23 @@ RSpec.shared_examples "backend" do
       expect(File.exists?(::File.join workdir, "update" )).to be_truthy
     end
   end
+
+  it 'mirrors a private repo using ssh protocol' do
+    skip "Missing TEST_REPO_SSH_URL and TEST_REPO_SSH_KEY" unless ENV['TEST_REPO_SSH_URL'] && ENV['TEST_REPO_SSH_KEY']
+    Dir.mktmpdir do |dir|
+      Gitmirror.cache_dir = ::File.join dir, 'repo'
+      repo = Gitmirror::Repository.new(ENV['TEST_REPO_SSH_URL'])
+      repo.mirror(ENV['TEST_REPO_SSH_KEY'])
+    end
+  end
+
+  it 'mirrors a private repo using https protocol' do
+    skip "Missing TEST_REPO_HTTPS_URL and TEST_REPO_HTTPS_PASSWORD" unless ENV['TEST_REPO_HTTPS_URL'] && ENV['TEST_REPO_HTTPS_PASSWORD']
+    Dir.mktmpdir do |dir|
+      Gitmirror.cache_dir = ::File.join dir, 'repo'
+      repo = Gitmirror::Repository.new(ENV['TEST_REPO_HTTPS_URL'])
+      repo.mirror(ENV['TEST_REPO_HTTPS_PASSWORD'])
+    end
+  end
+
 end
