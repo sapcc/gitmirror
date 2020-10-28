@@ -30,7 +30,7 @@ module Gitmirror
             Tempfile.open("ssh-key") do |file|
               file.write(credential)
               file.close
-              git({"GIT_SSH_COMMAND"=> "ssh -o BatchMode=yes -i #{file.path}"}, "--git-dir" ,local_repo_path, "fetch", "origin")
+              git({"GIT_SSH_COMMAND"=> "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o BatchMode=yes -i #{file.path}"}, "--git-dir" ,local_repo_path, "fetch", "origin")
             end
           end
         else
